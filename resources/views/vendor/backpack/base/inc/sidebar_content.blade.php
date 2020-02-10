@@ -17,3 +17,4 @@
 @role('superadmin')
 <li class='nav-item'><a class='nav-link' href='{{ backpack_url('questiontype') }}'><i class='nav-icon fa fa-question'></i> QuestionTypes</a></li>
 @endrole
+
