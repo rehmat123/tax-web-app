@@ -7,7 +7,7 @@ Ask Private Question from Tax Representative
       - Give answer to Question<br>
      - Password Reset<br>
      - See all list of question asked from clients <br>
-     - Filtering ,br>
+     - Filtering <br>
      - Create roles,permission and users
  2) Client Panel <br>
     - Ask Question from tax representative<br>
