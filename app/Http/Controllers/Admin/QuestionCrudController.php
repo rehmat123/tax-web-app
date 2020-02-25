@@ -7,7 +7,9 @@ use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use http\Env\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\QuestionAnswered;
+use App\User;
 /**
  * Class QuestionCrudController
  * @package App\Http\Controllers\Admin
@@ -33,6 +35,61 @@ class QuestionCrudController extends CrudController
 
     }
 
+    protected function setupShowOperation()
+    {
+        $this->crud->set('show.setFromDb', true);
+    
+        $this->crud->addColumn( [
+
+            'label' => 'Type', // Table column heading
+            'type'  => 'select',
+            'name' => 'type',
+            'entity' => 'types', // the method that defines the relationship in your Model
+            'attribute' => 'name', // foreign key attribute that is shown to user
+            'model' => "App\Models\QuestionType" // foreign key model
+        ]);
+        $this->crud->addColumn( [
+
+            'label' => 'UserName', // Table column heading
+            'type'  => 'select',
+            'name' => 'user_id',
+            'entity' => 'user', // the method that defines the relationship in your Model
+            'attribute' => 'name', // foreign key attribute that is shown to user
+            'model' => "App\User" // foreign key model
+
+        ]);
+        if (backpack_user()->hasRole('superadmin')) {
+            $this->crud->addColumn([
+
+                'label' => 'Email', // Table column heading
+                'type' => 'select',
+                'name' => 'email',
+                'entity' => 'user', // the method that defines the relationship in your Model
+                'attribute' => 'email', // foreign key attribute that is shown to user
+                'model' => "App\User" // foreign key model
+
+            ]);
+            $this->crud->addColumn([
+                'name' => 'created_at', // The db column name
+                'label' => "Question Created At", // Table column headin
+            ]);
+            $this->crud->addColumn([
+                'name' => 'answer_at', // The db column name
+                'label' => " Answer given At", // Table column headin
+            ]);
+           
+        }
+        $this->crud->addColumn([
+            'name' => 'image',
+            'label' => 'Document Attachment',
+            'type' => 'upload_multiple',
+            'upload' => false,
+            'prefix' => '../'
+
+        ]);
+        // $this->crud->removeColumn('date');
+        // $this->crud->removeColumn('extras');
+    }
     protected function setupListOperation()
     {
         if (backpack_user()->hasRole('superadmin')) {
@@ -49,6 +106,7 @@ class QuestionCrudController extends CrudController
             'name' => 'question', // The db column name
             'label' => "Question", // Table column headin
         ]);
+      
         $this->crud->addColumn([
             'name' => 'answer', // The db column name
             'label' => "Answer", // Table column headin
@@ -74,28 +132,8 @@ class QuestionCrudController extends CrudController
             'model' => "App\User" // foreign key model
 
         ]);
-        $this->crud->addColumn( [
-
-            'label' => 'User Name', // Table column heading
-            'type'  => 'select',
-            'name' => 'user_id',
-            'entity' => 'user', // the method that defines the relationship in your Model
-            'attribute' => 'name', // foreign key attribute that is shown to user
-            'model' => "App\User" // foreign key model
-
-        ]);
-        if (backpack_user()->hasRole('superadmin')) {
-            $this->crud->addColumn([
-
-                'label' => 'Email', // Table column heading
-                'type' => 'select',
-                'name' => 'email',
-                'entity' => 'user', // the method that defines the relationship in your Model
-                'attribute' => 'email', // foreign key attribute that is shown to user
-                'model' => "App\User" // foreign key model
-
-            ]);
-        }
+       
+      
 //        $this->crud->setColumnDetails('type', ['attribute' => 'type']);
 
     }
@@ -104,7 +142,6 @@ class QuestionCrudController extends CrudController
     protected function setupCreateOperation()
     {
         $this->crud->setValidation(QuestionRequest::class);
-
 
         // TODO: remove setFromDb() and manually define Fields
        // $this->crud->setFromDb();
@@ -138,12 +175,22 @@ class QuestionCrudController extends CrudController
                 ]
             ]);
         }
+
         $this->crud->addField([
             'name'  => 'user_id',
             'label' => 'xxxx',
             'type'  => 'hidden',
             'value'  => Auth::user()->id
         ]);
+
+        if (backpack_user()->hasRole('superadmin')) {
+                $this->crud->addField([
+                    'name'  => 'answer_at',
+                    'label' => 'xxxx',
+                    'type'  => 'hidden',
+                    'value'  => date("Y-m-d H:i:s")
+                ]);
+        }
         $this->crud->addField([
             'name' => 'image',
             'label' => 'Document Attachment',
@@ -152,6 +199,34 @@ class QuestionCrudController extends CrudController
             'prefix' => '../'
 
         ]);
+
+        $objDemo = new \stdClass();
+        $objDemo->demo_one = 'Demo One Value';
+        $objDemo->demo_two = 'Demo Two Value';
+        $objDemo->sender = 'SenderUserName';
+        $objDemo->receiver = 'ReceiverUserName';
+
+        if (backpack_user()->hasRole('superadmin')) {
+
+            
+
+            // $this->crud->addColumn( [
+
+            //     'label' => 'User Name', // Table column heading
+            //     'type'  => 'select',
+            //     'name' => 'user_id',
+            //     'entity' => 'user', // the method that defines the relationship in your Model
+            //     'attribute' => 'email', // foreign key attribute that is shown to user
+            //     'model' => "App\User" , // foreign key model ,
+            //     'options'   => (function ($query) {
+            //         return $query->email;
+            //     }), 
+    
+            // ]);
+            // exit;
+            
+           // Mail::to("rehmat.sayani@gmail.com")->send(new QuestionAnswered($objDemo));
+        }
     }
 
 
@@ -163,6 +238,7 @@ class QuestionCrudController extends CrudController
 
         $this->crud->removeField('user_id');
 
+    
         $redirect_location =$this->traitUpdate($request);
 
         return $redirect_location;

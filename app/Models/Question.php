@@ -35,9 +35,12 @@ class Question extends Model
     |--------------------------------------------------------------------------
     */
 
+   
     public function answer($crud = false)
     {
-        return '<a class="btn btn-sm btn-link"  href="question/'.$this->id.'/edit" data-toggle="tooltip" title="Just a demo custom button."><i class="fa fa-eye"></i> Answer</a>';
+        if(!isset($this->answer)){
+            return '<a class="btn btn-sm btn-link"  href="question/'.$this->id.'/edit" data-toggle="tooltip" title="Just a demo custom button."><i class="fa fa-eye"></i> Answer</a>';
+        }
     }
     public function edit($crud = false)
     {
