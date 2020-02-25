@@ -9,7 +9,9 @@ use http\Env\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\QuestionAnswered;
+use App\Models\Question;
 use App\User;
+
 /**
  * Class QuestionCrudController
  * @package App\Http\Controllers\Admin
@@ -19,7 +21,9 @@ class QuestionCrudController extends CrudController
 {
     use \Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
-    use \Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation {update as traitUpdate; }
+    use \Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation {
+        update as traitUpdate;
+    }
     use \Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
 
@@ -32,14 +36,13 @@ class QuestionCrudController extends CrudController
         if (backpack_user()->hasRole('client')) {
             $this->crud->addClause('where', 'user_id', '=', \Auth::user()->id);
         }
-
     }
 
     protected function setupShowOperation()
     {
         $this->crud->set('show.setFromDb', true);
-    
-        $this->crud->addColumn( [
+
+        $this->crud->addColumn([
 
             'label' => 'Type', // Table column heading
             'type'  => 'select',
@@ -48,7 +51,7 @@ class QuestionCrudController extends CrudController
             'attribute' => 'name', // foreign key attribute that is shown to user
             'model' => "App\Models\QuestionType" // foreign key model
         ]);
-        $this->crud->addColumn( [
+        $this->crud->addColumn([
 
             'label' => 'UserName', // Table column heading
             'type'  => 'select',
@@ -77,7 +80,6 @@ class QuestionCrudController extends CrudController
                 'name' => 'answer_at', // The db column name
                 'label' => " Answer given At", // Table column headin
             ]);
-           
         }
         $this->crud->addColumn([
             'name' => 'image',
@@ -100,18 +102,18 @@ class QuestionCrudController extends CrudController
 
         $this->crud->removeButton('update');
         // TODO: remove setFromDb() and manually define Columns, maybe Filters
-       // $this->crud->setFromDb();
-       // $this->crud->addField('question');
+        // $this->crud->setFromDb();
+        // $this->crud->addField('question');
         $this->crud->addColumn([
             'name' => 'question', // The db column name
             'label' => "Question", // Table column headin
         ]);
-      
+
         $this->crud->addColumn([
             'name' => 'answer', // The db column name
             'label' => "Answer", // Table column headin
         ]);
-        $this->crud->addColumn( [
+        $this->crud->addColumn([
 
             'label' => 'Type', // Table column heading
             'type'  => 'select',
@@ -122,7 +124,7 @@ class QuestionCrudController extends CrudController
 
         ]);
 
-        $this->crud->addColumn( [
+        $this->crud->addColumn([
 
             'label' => 'User Name', // Table column heading
             'type'  => 'select',
@@ -132,9 +134,6 @@ class QuestionCrudController extends CrudController
             'model' => "App\User" // foreign key model
 
         ]);
-       
-      
-//        $this->crud->setColumnDetails('type', ['attribute' => 'type']);
 
     }
 
@@ -144,7 +143,7 @@ class QuestionCrudController extends CrudController
         $this->crud->setValidation(QuestionRequest::class);
 
         // TODO: remove setFromDb() and manually define Fields
-       // $this->crud->setFromDb();
+        // $this->crud->setFromDb();
         $this->crud->addField([
             'name' => 'subject',
             'type' => 'text',
@@ -159,7 +158,7 @@ class QuestionCrudController extends CrudController
         $this->crud->addField([
             'name' => 'type',
             'type' => 'select',
-            'label'=> 'Question Type',
+            'label' => 'Question Type',
             'entity' => 'types',
             'attribute' => 'name', // foreign key attribute that is shown to user
             'model' => "App\Models\QuestionType" // foreign key model
@@ -184,12 +183,12 @@ class QuestionCrudController extends CrudController
         ]);
 
         if (backpack_user()->hasRole('superadmin')) {
-                $this->crud->addField([
-                    'name'  => 'answer_at',
-                    'label' => 'xxxx',
-                    'type'  => 'hidden',
-                    'value'  => date("Y-m-d H:i:s")
-                ]);
+            $this->crud->addField([
+                'name'  => 'answer_at',
+                'label' => 'xxxx',
+                'type'  => 'hidden',
+                'value'  => date("Y-m-d H:i:s")
+            ]);
         }
         $this->crud->addField([
             'name' => 'image',
@@ -199,34 +198,6 @@ class QuestionCrudController extends CrudController
             'prefix' => '../'
 
         ]);
-
-        $objDemo = new \stdClass();
-        $objDemo->demo_one = 'Demo One Value';
-        $objDemo->demo_two = 'Demo Two Value';
-        $objDemo->sender = 'SenderUserName';
-        $objDemo->receiver = 'ReceiverUserName';
-
-        if (backpack_user()->hasRole('superadmin')) {
-
-            
-
-            // $this->crud->addColumn( [
-
-            //     'label' => 'User Name', // Table column heading
-            //     'type'  => 'select',
-            //     'name' => 'user_id',
-            //     'entity' => 'user', // the method that defines the relationship in your Model
-            //     'attribute' => 'email', // foreign key attribute that is shown to user
-            //     'model' => "App\User" , // foreign key model ,
-            //     'options'   => (function ($query) {
-            //         return $query->email;
-            //     }), 
-    
-            // ]);
-            // exit;
-            
-           // Mail::to("rehmat.sayani@gmail.com")->send(new QuestionAnswered($objDemo));
-        }
     }
 
 
@@ -234,12 +205,13 @@ class QuestionCrudController extends CrudController
     {
         $this->setupCreateOperation();
     }
-    public function update(QuestionRequest $request){
-
+    public function update(QuestionRequest $request)
+    {
+        $id = \Route::current()->parameter('id');
+        $question = Question::join('users', 'users.id', 'questions.user_id')->where('questions.id', '=', intval($id))->first();
         $this->crud->removeField('user_id');
-
-    
-        $redirect_location =$this->traitUpdate($request);
+        $redirect_location = $this->traitUpdate($request);
+        Mail::to($question->email)->send(new QuestionAnswered());
 
         return $redirect_location;
     }

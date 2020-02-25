@@ -21,12 +21,9 @@ class QuestionTypeCrudController extends CrudController
 
     public function setup()
     {
-
         $this->crud->setModel('App\Models\QuestionType');
         $this->crud->setRoute(config('backpack.base.route_prefix') . '/questiontype');
         $this->crud->setEntityNameStrings('questiontype', 'question_types');
-
-
     }
 
     protected function setupListOperation()
