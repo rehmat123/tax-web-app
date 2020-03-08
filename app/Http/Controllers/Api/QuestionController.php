@@ -18,7 +18,9 @@ class QuestionController extends Controller
     public function getAll(){
         $question = Question::where('user_id','=',auth('api')->user()->id)->get();
         if($question){
-            return response()->json(['success' => $question], $this->successStatus);
+            $success['data'] = $question;
+            $success['status'] = $this->successStatus;
+            return response()->json(['success' => $success], $this->successStatus);
         }
         else{
             return response()->json(['error'=>'Unauthorised'], 401);
