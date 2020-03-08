@@ -14,4 +14,5 @@ use Illuminate\Http\Request;
 */
 
 Route::middleware('auth:api')->get('/user', 'Api\UserController@get');
+Route::middleware('auth:api')->get('/questions', 'Api\QuestionController@getAll');
 Route::post('/login', 'Api\UserController@login');
